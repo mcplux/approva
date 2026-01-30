@@ -1,0 +1,8 @@
+dist/
+node_modules/
+.dockerignore
+.gitignore
+.prettier
+Dockerfile*
+eslist.config.mjs
+README.md
