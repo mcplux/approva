@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigService } from './config/config.service';
 import { AppConfigModule } from './config/config.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AppConfigModule } from './config/config.module';
         synchronize: true, //! deactivate on production
       }),
     }),
+    AuthModule,
   ],
 })
 export class AppModule {}
