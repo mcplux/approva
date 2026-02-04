@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { StringValue } from 'ms';
+
+const timeSpanRegex = /^(\d+)(ms|s|m|h|d|w|y)$/;
 
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production']).default('development'),
@@ -11,7 +14,12 @@ export const envSchema = z.object({
   POSTGRES_DB: z.string(),
 
   JWT_ACCESS_SECRET: z.string().min(20),
-  JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
+  JWT_ACCESS_EXPIRES_IN: z
+    .string()
+    .default('15m')
+    .refine((val): val is StringValue => timeSpanRegex.test(val), {
+      error: 'Invalid time span format',
+    }),
 });
 
 export type Env = z.infer<typeof envSchema>;

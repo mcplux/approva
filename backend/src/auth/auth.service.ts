@@ -3,19 +3,24 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { QueryFailedError, Repository } from 'typeorm';
 
-import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
+import { CreateUserDto, LoginDto } from './dto';
+import { AppConfigService } from 'src/config/config.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
+    private readonly configService: AppConfigService,
   ) {}
 
   private readonly logger = new Logger('AuthService');
@@ -45,5 +50,47 @@ export class AuthService {
       this.logger.log(error);
       throw new InternalServerErrorException('Something went wrong');
     }
+  }
+
+  async login(loginDto: LoginDto) {
+    const { email, password } = loginDto;
+
+    const user = await this.userRepository.findOneBy({ email });
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    user.lastLogin = new Date();
+    await this.userRepository.save(user);
+
+    const { accessToken } = await this.generateTokens(
+      user.id,
+      user.email,
+      user.tokenVersion,
+    );
+
+    return {
+      accessToken,
+    };
+  }
+
+  private async generateTokens(sub: string, email: string, tv: number) {
+    const payload = { sub, email, tv };
+
+    const accessToken = await this.jwtService.signAsync<{
+      sub: string;
+      email: string;
+      tv: number;
+    }>(payload, {
+      secret: this.configService.get('JWT_ACCESS_SECRET'),
+      expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN'),
+    });
+
+    return { accessToken };
   }
 }
