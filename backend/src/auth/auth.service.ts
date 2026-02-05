@@ -13,6 +13,7 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto, LoginDto } from './dto';
 import { AppConfigService } from 'src/config/config.service';
+import { JwtPayload } from './types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -35,7 +36,16 @@ export class AuthService {
 
       await this.userRepository.save(user);
 
-      return user;
+      const { accessToken, refreshToken } = await this.generateTokens(
+        user.id,
+        user.email,
+        user.tokenVersion,
+      );
+
+      return {
+        accessToken,
+        refreshToken,
+      };
     } catch (error) {
       if (
         error instanceof QueryFailedError &&
@@ -68,7 +78,7 @@ export class AuthService {
     user.lastLogin = new Date();
     await this.userRepository.save(user);
 
-    const { accessToken } = await this.generateTokens(
+    const { accessToken, refreshToken } = await this.generateTokens(
       user.id,
       user.email,
       user.tokenVersion,
@@ -76,21 +86,24 @@ export class AuthService {
 
     return {
       accessToken,
+      refreshToken,
     };
   }
 
   private async generateTokens(sub: string, email: string, tv: number) {
-    const payload = { sub, email, tv };
+    const payload: JwtPayload = { sub, email, tv };
 
-    const accessToken = await this.jwtService.signAsync<{
-      sub: string;
-      email: string;
-      tv: number;
-    }>(payload, {
-      secret: this.configService.get('JWT_ACCESS_SECRET'),
-      expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN'),
-    });
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync<JwtPayload>(payload, {
+        secret: this.configService.get('JWT_ACCESS_SECRET'),
+        expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN'),
+      }),
+      this.jwtService.signAsync<JwtPayload>(payload, {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN'),
+      }),
+    ]);
 
-    return { accessToken };
+    return { accessToken, refreshToken };
   }
 }

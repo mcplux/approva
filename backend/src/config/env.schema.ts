@@ -20,6 +20,13 @@ export const envSchema = z.object({
     .refine((val): val is StringValue => timeSpanRegex.test(val), {
       error: 'Invalid time span format',
     }),
+  JWT_REFRESH_SECRET: z.string().min(20),
+  JWT_REFRESH_EXPIRES_IN: z
+    .string()
+    .default('15m')
+    .refine((val): val is StringValue => timeSpanRegex.test(val), {
+      error: 'Invalid time span format',
+    }),
 });
 
 export type Env = z.infer<typeof envSchema>;
