@@ -9,11 +9,13 @@ import {
 } from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { CreateRequestDto, UpdateRequestDto } from './dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('requests')
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 
+  @Auth()
   @Post()
   create(@Body() createRequestDto: CreateRequestDto) {
     return this.requestsService.create(createRequestDto);
