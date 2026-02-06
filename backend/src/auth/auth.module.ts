@@ -7,10 +7,11 @@ import { AuthController } from './auth.controller';
 import { User } from './entities/user.entity';
 import { AppConfigModule } from 'src/config/config.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
   imports: [
     TypeOrmModule.forFeature([User]),
     JwtModule.register({}),

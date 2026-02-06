@@ -1,20 +1,23 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { JwtPayload } from '../types/jwt-payload.type';
-import { User } from '../entities/user.entity';
 import { AuthService } from '../auth.service';
 import { AppConfigService } from 'src/config/config.service';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { User } from '../entities/user.entity';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class JwtRefreshStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh',
+) {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: AppConfigService,
   ) {
     super({
-      secretOrKey: configService.get('JWT_ACCESS_SECRET'),
+      secretOrKey: configService.get('JWT_REFRESH_SECRET'),
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       passReqToCallback: false,
@@ -23,13 +26,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(payload: JwtPayload): Promise<User> {
     const { sub, tv } = payload;
-    const user = await this.authService.findUserById(sub);
-    if (!user) {
-      throw new UnauthorizedException('Invalid token');
-    }
 
-    if (user.tokenVersion !== tv) {
-      throw new UnauthorizedException('Invalid token');
+    const user = await this.authService.findUserById(sub);
+    if (!user || user.tokenVersion !== tv) {
+      throw new ForbiddenException('Invalid token');
     }
 
     return user;

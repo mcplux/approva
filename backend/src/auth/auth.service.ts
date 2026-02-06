@@ -103,6 +103,20 @@ export class AuthService {
     }
   }
 
+  async refreshToken(user: User) {
+    const { accessToken } = await this.generateTokens(
+      user.id,
+      user.email,
+      user.tokenVersion,
+    );
+
+    return { accessToken };
+  }
+
+  findUserById(id: User['id']) {
+    return this.userRepository.findOneBy({ id });
+  }
+
   private async generateTokens(sub: string, email: string, tv: number) {
     const payload: JwtPayload = { sub, email, tv };
 
