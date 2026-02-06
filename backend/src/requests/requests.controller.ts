@@ -6,10 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { RequestsService } from './requests.service';
-import { CreateRequestDto, UpdateRequestDto } from './dto';
+import { CreateRequestDto, FilterRequestDto, UpdateRequestDto } from './dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { User } from 'src/auth/entities/user.entity';
 
 @Controller('requests')
 export class RequestsController {
@@ -17,14 +20,14 @@ export class RequestsController {
 
   @Auth()
   @Post()
-  create(@Body() createRequestDto: CreateRequestDto) {
-    return this.requestsService.create(createRequestDto);
+  create(@GetUser() user: User, @Body() createRequestDto: CreateRequestDto) {
+    return this.requestsService.create(user, createRequestDto);
   }
 
   @Auth()
   @Get()
-  findAll() {
-    return this.requestsService.findAll();
+  findAll(@GetUser() user: User, @Query() filterRequestDto: FilterRequestDto) {
+    return this.requestsService.findAll(user, filterRequestDto);
   }
 
   @Get(':id')
