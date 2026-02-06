@@ -90,6 +90,19 @@ export class AuthService {
     };
   }
 
+  async logout(user: User) {
+    try {
+      user.tokenVersion += 1;
+      await this.userRepository.save(user);
+
+      return {
+        message: 'User logged out successfully',
+      };
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+
   private async generateTokens(sub: string, email: string, tv: number) {
     const payload: JwtPayload = { sub, email, tv };
 
