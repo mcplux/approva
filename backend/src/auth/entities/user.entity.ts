@@ -2,8 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+import { Request } from 'src/requests/entities/request.entity';
 
 export enum UserRole {
   USER = 'user',
@@ -36,4 +39,7 @@ export class User {
 
   @Column('timestamptz', { nullable: true })
   lastLogin: Date;
+
+  @OneToMany(() => Request, (request) => request.createdBy)
+  requests: Request[];
 }
