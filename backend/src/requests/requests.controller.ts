@@ -21,6 +21,7 @@ export class RequestsController {
     return this.requestsService.create(createRequestDto);
   }
 
+  @Auth()
   @Get()
   findAll() {
     return this.requestsService.findAll();
