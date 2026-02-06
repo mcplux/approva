@@ -5,6 +5,12 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+export enum UserRole {
+  USER = 'user',
+  REVIEWER = 'reviewer',
+  ADMIN = 'admin',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -18,6 +24,9 @@ export class User {
 
   @Column()
   fullName: string;
+
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  userRole: UserRole;
 
   @Column('int', { default: 0 })
   tokenVersion: number;
