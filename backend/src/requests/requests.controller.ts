@@ -7,6 +7,9 @@ import {
   Param,
   Delete,
   Query,
+  ParseIntPipe,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { CreateRequestDto, FilterRequestDto, UpdateRequestDto } from './dto';
@@ -20,28 +23,36 @@ export class RequestsController {
 
   @Auth()
   @Post()
-  create(@GetUser() user: User, @Body() createRequestDto: CreateRequestDto) {
-    return this.requestsService.create(user, createRequestDto);
+  create(@Body() createRequestDto: CreateRequestDto, @GetUser() user: User) {
+    return this.requestsService.create(createRequestDto, user);
   }
 
   @Auth()
   @Get()
-  findAll(@GetUser() user: User, @Query() filterRequestDto: FilterRequestDto) {
-    return this.requestsService.findAll(user, filterRequestDto);
+  findAll(@Query() filterRequestDto: FilterRequestDto, @GetUser() user: User) {
+    return this.requestsService.findMany(filterRequestDto, user);
   }
 
+  @Auth()
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.requestsService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number, @GetUser() user: User) {
+    return this.requestsService.findOne(id, user);
   }
 
+  @Auth()
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRequestDto: UpdateRequestDto) {
-    return this.requestsService.update(+id, updateRequestDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateRequestDto: UpdateRequestDto,
+    @GetUser() user: User,
+  ) {
+    return this.requestsService.update(+id, updateRequestDto, user);
   }
 
+  @Auth()
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.requestsService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number, @GetUser() user: User) {
+    return this.requestsService.remove(id, user);
   }
 }
