@@ -4,11 +4,12 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
 import { CreateRequestDto, FilterRequestDto, UpdateRequestDto } from './dto';
 import { User, UserRole } from 'src/auth/entities/user.entity';
 import { Repository } from 'typeorm';
 import { Request } from './entities/request.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class RequestsService {
@@ -26,8 +27,7 @@ export class RequestsService {
     });
 
     try {
-      await this.requestsRepository.save(request);
-      return request;
+      return this.requestsRepository.save(request);
     } catch (error) {
       this.logger.error(error);
     }
@@ -64,33 +64,40 @@ export class RequestsService {
   }
 
   async findOne(id: number, user: User) {
-    const request = await this.requestsRepository.findOne({
-      where: { id },
-      relations: ['createdBy'],
-    });
-
-    if (!request) {
-      throw new NotFoundException(`Request with id ${id} not found`);
-    }
+    const request = await this.findByIdOrFail(id);
 
     if (user.userRole === UserRole.USER) {
       if (request.createdBy.id !== user.id) {
-        throw new ForbiddenException(`Forbidden request`);
+        throw new ForbiddenException('User cannot retrieve this request');
       }
     }
 
     return request;
   }
 
-  update(id: number, updateRequestDto: UpdateRequestDto, user: User) {
-    return {
-      id,
-      updateRequestDto,
-      user,
-    };
+  async update(id: number, updateRequestDto: UpdateRequestDto, user: User) {
+    const request = await this.findByIdOrFail(id);
+
+    if (request.createdBy.id !== user.id) {
+      throw new ForbiddenException('User cannot update this request');
+    }
+
+    Object.assign(request, updateRequestDto);
+
+    return this.requestsRepository.save(request);
   }
 
   async remove(id: number, user: User) {
+    const request = await this.findByIdOrFail(id);
+
+    if (request.createdBy.id !== user.id) {
+      throw new ForbiddenException('User cannot delete this request');
+    }
+
+    await this.requestsRepository.remove(request);
+  }
+
+  private async findByIdOrFail(id: number) {
     const request = await this.requestsRepository.findOne({
       where: { id },
       relations: ['createdBy'],
@@ -100,10 +107,6 @@ export class RequestsService {
       throw new NotFoundException(`Request with id ${id} not found`);
     }
 
-    if (request.createdBy.id !== user.id) {
-      throw new ForbiddenException('User cannot delete this request');
-    }
-
-    await this.requestsRepository.remove(request);
+    return request;
   }
 }
