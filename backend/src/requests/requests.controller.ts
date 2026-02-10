@@ -12,10 +12,15 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { RequestsService } from './requests.service';
-import { CreateRequestDto, FilterRequestDto, UpdateRequestDto } from './dto';
+import {
+  CreateRequestDto,
+  FilterRequestDto,
+  UpdateRequestDto,
+  UpdateRequestStatusDto,
+} from './dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
-import { User } from 'src/auth/entities/user.entity';
+import { User, UserRole } from 'src/auth/entities/user.entity';
 
 @Controller('requests')
 export class RequestsController {
@@ -54,5 +59,15 @@ export class RequestsController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number, @GetUser() user: User) {
     return this.requestsService.remove(id, user);
+  }
+
+  @Auth(UserRole.ADMIN, UserRole.REVIEWER)
+  @Patch(':id/status')
+  updateStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateRequestStatusDto: UpdateRequestStatusDto,
+    @GetUser() user: User,
+  ) {
+    return this.requestsService.updateStatus(id, updateRequestStatusDto, user);
   }
 }

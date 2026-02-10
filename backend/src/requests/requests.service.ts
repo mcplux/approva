@@ -6,9 +6,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { CreateRequestDto, FilterRequestDto, UpdateRequestDto } from './dto';
-import { User, UserRole } from 'src/auth/entities/user.entity';
 import { Repository } from 'typeorm';
+import {
+  CreateRequestDto,
+  FilterRequestDto,
+  UpdateRequestDto,
+  UpdateRequestStatusDto,
+} from './dto';
+import { User, UserRole } from 'src/auth/entities/user.entity';
 import { Request } from './entities/request.entity';
 
 @Injectable()
@@ -95,6 +100,38 @@ export class RequestsService {
     }
 
     await this.requestsRepository.remove(request);
+  }
+
+  async updateStatus(
+    id: number,
+    updateRequestStatusDto: UpdateRequestStatusDto,
+    user: User,
+  ) {
+    const request = await this.findByIdOrFail(id);
+
+    if (request.createdBy.id === user.id) {
+      throw new ForbiddenException('User cannot update their own request');
+    }
+
+    // Validate hierarchy
+    const roleHierarchy = {
+      [UserRole.USER]: 0,
+      [UserRole.REVIEWER]: 1,
+      [UserRole.ADMIN]: 2,
+    };
+
+    const ownerHierarchy = roleHierarchy[request.createdBy.userRole];
+    const reviewerHierarchy = roleHierarchy[user.userRole];
+
+    if (ownerHierarchy > reviewerHierarchy) {
+      throw new ForbiddenException(
+        'User cannot review requests from higher roles',
+      );
+    }
+
+    // Update request
+    request.status = updateRequestStatusDto.status;
+    return this.requestsRepository.save(request);
   }
 
   private async findByIdOrFail(id: number) {
