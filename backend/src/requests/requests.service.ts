@@ -15,12 +15,14 @@ import {
 } from './dto';
 import { User, UserRole } from 'src/auth/entities/user.entity';
 import { Request } from './entities/request.entity';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class RequestsService {
   constructor(
     @InjectRepository(Request)
     private readonly requestsRepository: Repository<Request>,
+    private readonly autService: AuthService,
   ) {}
 
   logger = new Logger('RequestsService');
@@ -30,19 +32,23 @@ export class RequestsService {
       ...createRequestDto,
       createdBy: user,
     });
+    const newRequest = await this.requestsRepository.save(request);
 
-    try {
-      return this.requestsRepository.save(request);
-    } catch (error) {
-      this.logger.error(error);
-    }
+    return this.mapRequestResponse(newRequest);
   }
 
   async findMany(filterRequestDto: FilterRequestDto, user: User) {
     const { limit = 20, offset = 0, mine } = filterRequestDto;
 
     const qb = this.requestsRepository.createQueryBuilder('request');
-    qb.leftJoinAndSelect('request.createdBy', 'createdBy');
+    qb.leftJoin('request.createdBy', 'createdBy');
+    qb.select([
+      'request',
+      'createdBy.id',
+      'createdBy.email',
+      'createdBy.fullName',
+      'createdBy.userRole',
+    ]);
 
     if (user.userRole === UserRole.USER) {
       // "user" only their requests
@@ -77,7 +83,7 @@ export class RequestsService {
       }
     }
 
-    return request;
+    return this.mapRequestResponse(request);
   }
 
   async update(id: number, updateRequestDto: UpdateRequestDto, user: User) {
@@ -89,7 +95,9 @@ export class RequestsService {
 
     Object.assign(request, updateRequestDto);
 
-    return this.requestsRepository.save(request);
+    const updatedRequest = await this.requestsRepository.save(request);
+
+    return this.mapRequestResponse(updatedRequest);
   }
 
   async remove(id: number, user: User) {
@@ -131,7 +139,16 @@ export class RequestsService {
 
     // Update request
     request.status = updateRequestStatusDto.status;
-    return this.requestsRepository.save(request);
+    const updatedRequest = await this.requestsRepository.save(request);
+
+    return this.mapRequestResponse(updatedRequest);
+  }
+
+  private mapRequestResponse(request: Request) {
+    return {
+      ...request,
+      createdBy: this.autService.getUser(request.createdBy),
+    };
   }
 
   private async findByIdOrFail(id: number) {

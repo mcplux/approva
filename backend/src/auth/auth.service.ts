@@ -45,6 +45,7 @@ export class AuthService {
       return {
         accessToken,
         refreshToken,
+        user: this.getUser(user),
       };
     } catch (error) {
       if (
@@ -87,6 +88,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
+      user: this.getUser(user),
     };
   }
 
@@ -111,6 +113,17 @@ export class AuthService {
     );
 
     return { accessToken };
+  }
+
+  getUser(user: User) {
+    const { email, fullName, id, userRole } = user;
+
+    return {
+      email,
+      fullName,
+      id,
+      userRole,
+    };
   }
 
   findUserById(id: User['id']) {

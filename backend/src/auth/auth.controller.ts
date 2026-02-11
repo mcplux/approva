@@ -1,4 +1,11 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginDto } from './dto';
@@ -34,5 +41,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   refresh(@GetUser() user: User) {
     return this.authService.refreshToken(user);
+  }
+
+  @Auth()
+  @Get('me')
+  getUser(@GetUser() user: User) {
+    return this.authService.getUser(user);
   }
 }
