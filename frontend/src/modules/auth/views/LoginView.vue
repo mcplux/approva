@@ -1,24 +1,25 @@
 <script setup lang="ts">
-import { toTypedSchema } from '@vee-validate/zod'
-import { useForm } from 'vee-validate'
-import { loginSchema, type loginForm } from '../schemas/login-schema'
-import { loginAction } from '../actions/login.action'
+import { useLogin } from '../composable/use-login'
 
-const { handleSubmit, defineField, errors } = useForm<loginForm>({
-  validationSchema: toTypedSchema(loginSchema),
-})
-
-const [email, emailAttrs] = defineField('email')
-const [password, passwordAttrs] = defineField('password')
-
-const onSubmit = handleSubmit((values) => {
-  loginAction(values.email, values.password)
-})
+const {
+  email,
+  emailAttrs,
+  errors,
+  generalError,
+  hasGeneralError,
+  isSubmitting,
+  onSubmit,
+  password,
+  passwordAttrs,
+} = useLogin()
 </script>
 
 <template>
   <div class="flex flex-col items-center gap-5 max-w-2xl w-full mx-auto p-5 bg-white rounded-lg">
     <h1 class="text-4xl font-bold">Login</h1>
+    <p v-if="hasGeneralError" class="w-full p-2 bg-red-200 border-l-3 border-red-800 text-red-800">
+      {{ generalError }}
+    </p>
     <form @submit="onSubmit" class="w-full space-y-3">
       <fieldset class="flex flex-col gap-1">
         <label for="email" class="text-lg">Email:</label>
@@ -46,7 +47,13 @@ const onSubmit = handleSubmit((values) => {
 
       <button
         type="submit"
-        class="w-full text-white bg-blue-500 p-2 rounded cursor-pointer hover:bg-blue-600 transition-colors"
+        :class="[
+          'w-full',
+          'p-2 rounded cursor-pointer',
+          'text-white bg-blue-500 transition-colors',
+          'hover:bg-blue-600 disabled:opacity-80 disabled:hover:bg-blue-500 disabled:cursor-not-allowed',
+        ]"
+        :disabled="isSubmitting"
       >
         Login
       </button>
