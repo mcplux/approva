@@ -2,6 +2,7 @@
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { loginSchema, type loginForm } from '../schemas/login-schema'
+import { loginAction } from '../actions/login.action'
 
 const { handleSubmit, defineField, errors } = useForm<loginForm>({
   validationSchema: toTypedSchema(loginSchema),
@@ -11,7 +12,7 @@ const [email, emailAttrs] = defineField('email')
 const [password, passwordAttrs] = defineField('password')
 
 const onSubmit = handleSubmit((values) => {
-  console.log(values)
+  loginAction(values.email, values.password)
 })
 </script>
 
