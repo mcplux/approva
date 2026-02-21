@@ -4,7 +4,7 @@ export interface Request {
   id: number
   title: string
   description: string
-  type: string
+  type: 'vacation' | 'purchase' | 'generic'
   status: string
   createdAt: Date
   updatedAt: Date

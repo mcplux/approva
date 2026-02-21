@@ -3,6 +3,13 @@ import { ref } from 'vue'
 import { Check, ChevronDown, ChevronLeft, ChevronRight, Clock, Eye, Plus, X } from 'lucide-vue-next'
 
 import DropdownSelect from '../components/DropdownSelect.vue'
+import RequestsModal from '../components/RequestsModal.vue'
+
+// Requests Modal
+const isModalOpen = ref(false)
+const openModal = () => {
+  isModalOpen.value = true
+}
 
 // Filters
 const selectedFilter = ref('all')
@@ -23,6 +30,7 @@ const orderOptions = [
   <div class="bg-gray-300 p-5 border-b border-gray-400">
     <div class="max-w-4xl mx-auto flex items-center gap-5">
       <button
+        @click="openModal"
         class="flex items-center gap-1 bg-blue-600 text-white text-lg rounded py-2 px-6 hover:bg-blue-700 transition-colors cursor-pointer"
       >
         <Plus />
@@ -133,4 +141,6 @@ const orderOptions = [
       </button>
     </div>
   </div>
+
+  <RequestsModal v-model="isModalOpen" @saved="console.log('Hello world!')" />
 </template>
