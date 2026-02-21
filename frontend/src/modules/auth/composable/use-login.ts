@@ -22,7 +22,7 @@ export const useLogin = () => {
   const onSubmit = handleSubmit(async (values) => {
     const response = await authStore.login(values.email, values.password)
     if (response.success) {
-      router.replace('/')
+      router.replace({ name: 'requests' })
     } else {
       generalError.value = response.error
     }

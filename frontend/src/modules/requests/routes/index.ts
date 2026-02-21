@@ -1,3 +1,4 @@
+import { isAuthenticatedGuard } from '@/modules/auth/guards/is-authenticated.guard'
 import type { RouteRecordRaw } from 'vue-router'
 
 export const requestsRoutes: RouteRecordRaw = {
@@ -7,6 +8,7 @@ export const requestsRoutes: RouteRecordRaw = {
       path: '',
       name: 'requests',
       component: () => import('../views/RequestsView.vue'),
+      beforeEnter: isAuthenticatedGuard,
     },
   ],
 }

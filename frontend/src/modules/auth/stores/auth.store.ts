@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 
 import type { User } from '../types/user.type'
 import { loginAction } from '../actions/login.action'
+import { getMeAction } from '../actions/get-me.action'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
@@ -20,7 +21,24 @@ export const useAuthStore = defineStore('auth', () => {
 
     return response
   }
+
+  const checkAuth = async () => {
+    const response = await getMeAction()
+    if (!response.success) {
+      return {
+        success: false,
+      }
+    }
+
+    user.value = response.data
+    return {
+      success: true,
+    }
+  }
+
   return {
+    user,
     login,
+    checkAuth,
   }
 })
