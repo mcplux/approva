@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 import { ChevronDown } from 'lucide-vue-next'
 
 const isDropdownOpen = ref(false)
@@ -9,19 +10,8 @@ const toggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value
 }
 
-const handleClickOutside = (event: MouseEvent) => {
-  if (!menuRef.value) return
-  if (!menuRef.value.contains(event.target as Node)) {
-    isDropdownOpen.value = false
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside)
+onClickOutside(menuRef, () => {
+  isDropdownOpen.value = false
 })
 </script>
 
@@ -56,7 +46,7 @@ onBeforeUnmount(() => {
         >
           <div
             v-if="isDropdownOpen"
-            class="absolute right-0 mt-2 w-48 rounded-2xl bg-white shadow-lg ring-1 ring-black/5 overflow-hidden"
+            class="absolute right-0 mt-2 w-48 rounded-2xl bg-white shadow-lg ring-1 ring-black/5 overflow-hidden z-10"
           >
             <button class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Profile</button>
 

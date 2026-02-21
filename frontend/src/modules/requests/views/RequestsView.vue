@@ -1,32 +1,36 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { Check, ChevronDown, ChevronLeft, ChevronRight, Clock, Eye, Plus, X } from 'lucide-vue-next'
+
+import DropdownSelect from '../components/DropdownSelect.vue'
+
+// Filters
+const selectedFilter = ref('all')
+const selectedOrder = ref('recent')
+
+const filterOptions = [
+  { label: 'All categories', value: 'all' },
+  { label: 'Vacations', value: 'vacations' },
+  { label: 'Purchases', value: 'purchases' },
+]
+const orderOptions = [
+  { label: 'Most recent', value: 'recent' },
+  { label: 'Oldest first', value: 'oldest' },
+]
 </script>
 
 <template>
   <div class="bg-gray-300 p-5 border-b border-gray-400">
     <div class="max-w-4xl mx-auto flex items-center gap-5">
-      <button class="flex items-center gap-1 bg-blue-600 text-white text-lg rounded py-2 px-6">
+      <button
+        class="flex items-center gap-1 bg-blue-600 text-white text-lg rounded py-2 px-6 hover:bg-blue-700 transition-colors cursor-pointer"
+      >
         <Plus />
         New Request
       </button>
       <div class="flex gap-2 flex-1">
-        <button
-          class="flex justify-between items-center px-2 border border-slate-700 p-1 rounded w-1/2"
-        >
-          <p class="text-slate-700 font-bold">
-            Filter: <span class="text-black font-normal">All categories</span>
-          </p>
-          <ChevronDown />
-        </button>
-
-        <button
-          class="flex justify-between items-center px-2 border border-slate-700 p-1 rounded w-1/2"
-        >
-          <p class="text-slate-700 font-bold">
-            Order: <span class="text-black font-normal">Most recent</span>
-          </p>
-          <ChevronDown />
-        </button>
+        <DropdownSelect v-model="selectedFilter" label="Filter" :options="filterOptions" />
+        <DropdownSelect v-model="selectedOrder" label="Order" :options="orderOptions" />
       </div>
     </div>
   </div>
