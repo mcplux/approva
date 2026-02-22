@@ -32,8 +32,6 @@ export const findManyRequestsAction = async ({
       },
     })
 
-    console.log(data)
-
     return {
       success: true,
       data,
