@@ -10,8 +10,8 @@ export const useRequestsStore = defineStore('requests', () => {
     return response
   }
 
-  const getUserRequests = async () => {
-    const response = await findManyRequestsAction()
+  const getUserRequests = async (page: number) => {
+    const response = await findManyRequestsAction({ page })
 
     return response
   }

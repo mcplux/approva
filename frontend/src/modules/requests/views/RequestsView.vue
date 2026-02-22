@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
 
 import { useRequestsStore } from '../stores/requests.store'
@@ -28,11 +28,13 @@ const orderOptions = [
   { label: 'Oldest first', value: 'oldest' },
 ]
 
-// Requests
+// Requests & pagination
 const requestsStore = useRequestsStore()
 const requests = ref<Request[]>([])
 const isLoading = ref(false)
 const activeId = ref<Request['id'] | null>(null)
+const totalPages = ref(1)
+const currentPage = ref(1)
 
 const toggleActiveRequest = async (id: Request['id']) => {
   activeId.value = activeId.value === id ? null : id
@@ -40,14 +42,47 @@ const toggleActiveRequest = async (id: Request['id']) => {
 
 const handleGetRequests = async () => {
   isLoading.value = true
-  const response = await requestsStore.getUserRequests()
+  const response = await requestsStore.getUserRequests(currentPage.value)
   if (response.success) {
     requests.value = response.data.data
+    totalPages.value = Math.ceil(response.data.meta.total / response.data.meta.limit)
   }
   isLoading.value = false
 }
 
+const setPage = (page: number) => {
+  if (page > totalPages.value || page < 1) return
+  if (page === currentPage.value) return
+  currentPage.value = page
+
+  handleGetRequests()
+}
+
 onMounted(() => handleGetRequests())
+
+const visiblePages = computed(() => {
+  if (totalPages.value <= 5) {
+    return Array.from({ length: totalPages.value }, (_, i) => i + 1)
+  }
+
+  const maxVisible = 5
+  const half = Math.floor(maxVisible / 2)
+
+  let start = currentPage.value - half
+  let end = currentPage.value + half
+
+  if (start < 1) {
+    start = 1
+    end = maxVisible
+  }
+
+  if (end > totalPages.value) {
+    end = totalPages.value
+    start = totalPages.value - maxVisible + 1
+  }
+
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+})
 </script>
 
 <template>
@@ -72,7 +107,7 @@ onMounted(() => handleGetRequests())
   </div>
 
   <div
-    class="flex-1 flex flex-col overflow-auto max-w-4xl w-full mx-auto p-5 border-b border-gray-400"
+    class="flex-1 flex flex-col justify-center items-center overflow-auto max-w-4xl w-full mx-auto p-5 border-b border-gray-400"
   >
     <span
       v-if="isLoading"
@@ -91,27 +126,32 @@ onMounted(() => handleGetRequests())
   </div>
 
   <div class="flex justify-end items-center gap-5 w-full max-w-4xl mx-auto p-5">
-    <p>Page 1 of 5</p>
+    <p class="text-sm text-slate-600">Page {{ currentPage }} of {{ totalPages }}</p>
     <div class="flex items-center">
-      <button class="flex justify-center items-center h-9 w-14 border border-gray-400 rounded-l">
+      <button
+        class="flex justify-center items-center h-10 w-14 border border-gray-400 rounded-l cursor-pointer"
+        :class="['hover:border-b-4 hover:border-b-cyan-500 transition-all']"
+        @click="() => setPage(currentPage - 1)"
+      >
         <ChevronLeft class="size-4" stroke-width="3" />
       </button>
       <button
-        class="flex justify-center items-center h-9 w-9 border border-gray-400 border-b-4 border-b-blue-600 text-sm font-bold"
+        v-for="page in visiblePages"
+        :key="page"
+        class="flex justify-center items-center size-10 border border-gray-400 text-sm font-bold cursor-pointer"
+        :class="[
+          { 'border-b-4 border-b-blue-500': page === currentPage },
+          'hover:border-b-4 hover:border-b-cyan-500 transition-all',
+        ]"
+        @click="() => setPage(page)"
       >
-        1
+        {{ page }}
       </button>
       <button
-        class="flex justify-center items-center h-9 w-9 border border-gray-400 text-sm font-bold"
+        class="flex justify-center items-center h-10 w-14 border border-gray-400 rounded-r cursor-pointer"
+        :class="['hover:border-b-4 hover:border-b-cyan-500 transition-all']"
+        @click="() => setPage(currentPage + 1)"
       >
-        2
-      </button>
-      <button
-        class="flex justify-center items-center h-9 w-9 border border-gray-400 text-sm font-bold"
-      >
-        3
-      </button>
-      <button class="flex justify-center items-center h-9 w-14 border border-gray-400 rounded-r">
         <ChevronRight class="size-4" stroke-width="3" />
       </button>
     </div>

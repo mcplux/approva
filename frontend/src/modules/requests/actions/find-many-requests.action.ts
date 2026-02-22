@@ -13,24 +13,26 @@ type GetRequestsAction =
     }
 
 type Params = {
-  offset?: number
-  limit?: number
+  page?: number
   mine?: boolean
 }
 
+const LIMIT = 2
+
 export const findManyRequestsAction = async ({
-  offset = 0,
-  limit = 20,
+  page = 1,
   mine = true,
 }: Params = {}): Promise<GetRequestsAction> => {
   try {
     const { data } = await approvaApi.get<RequestsApiResponse>('/requests', {
       params: {
-        offset,
-        limit,
+        offset: (page - 1) * LIMIT,
+        limit: LIMIT,
         mine,
       },
     })
+
+    console.log(data)
 
     return {
       success: true,
