@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { ChevronDown, ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
 
 import { useRequestsStore } from '../stores/requests.store'
 import DropdownSelect from '../components/DropdownSelect.vue'
 import RequestsModal from '../components/RequestsModal.vue'
+import UserRequestCard from '../components/UserRequestCard.vue'
 import type { Request } from '../types/request.type'
-import { requestStatusConfig } from '../config/request-status.config'
-import { requestTypeConfig } from '../config/request-type.config'
 
 // Requests Modal
 const isModalOpen = ref(false)
@@ -32,15 +31,23 @@ const orderOptions = [
 // Requests
 const requestsStore = useRequestsStore()
 const requests = ref<Request[]>([])
+const isLoading = ref(false)
+const activeId = ref<Request['id'] | null>(null)
 
-onMounted(async () => {
+const toggleActiveRequest = async (id: Request['id']) => {
+  activeId.value = activeId.value === id ? null : id
+}
+
+const handleGetRequests = async () => {
+  isLoading.value = true
   const response = await requestsStore.getUserRequests()
   if (response.success) {
     requests.value = response.data.data
-    console.log(requests.value)
-    return
   }
-})
+  isLoading.value = false
+}
+
+onMounted(() => handleGetRequests())
 </script>
 
 <template>
@@ -65,30 +72,21 @@ onMounted(async () => {
   </div>
 
   <div
-    class="flex flex-col flex-1 gap-3 max-w-4xl w-full mx-auto p-5 border-b border-gray-400 overflow-auto"
+    class="flex-1 flex flex-col overflow-auto max-w-4xl w-full mx-auto p-5 border-b border-gray-400"
   >
-    <div
-      v-for="request in requests"
-      :key="request.id"
-      class="flex gap-3 items-center rounded bg-gray-100 shadow p-5"
-    >
-      <div class="w-36">
-        <h3 class="text-lg font-bold text-slate-900 truncate">
-          {{ requestTypeConfig[request.type].label }}
-        </h3>
-        <p class="text-slate-700 text-sm truncate">{{ request.title }}</p>
-      </div>
-
-      <div class="flex flex-1 gap-2 items-center px-5">
-        <div class="p-1 rounded-full" :class="[requestStatusConfig[request.status].bgColor]">
-          <component :is="requestStatusConfig[request.status].component" class="text-white" />
-        </div>
-        <p class="font-bold text-lg" :class="[requestStatusConfig[request.status].textColor]">
-          {{ requestStatusConfig[request.status].label }}
-        </p>
-      </div>
-
-      <ChevronDown />
+    <span
+      v-if="isLoading"
+      class="size-8 border-2 border-slate-700 border-t-transparent rounded-full animate-spin"
+    />
+    <div v-else class="flex-1 w-full flex flex-col gap-3">
+      <UserRequestCard
+        v-for="request in requests"
+        :key="request.id"
+        :id="`item-${request.id}`"
+        :request="request"
+        :is-active="activeId === request.id"
+        @toggle="toggleActiveRequest"
+      />
     </div>
   </div>
 
@@ -119,5 +117,5 @@ onMounted(async () => {
     </div>
   </div>
 
-  <RequestsModal v-model="isModalOpen" @saved="console.log('Hello world!')" />
+  <RequestsModal v-model="isModalOpen" @saved="handleGetRequests" />
 </template>
