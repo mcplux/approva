@@ -59,10 +59,10 @@ export class RequestsService {
         qb.andWhere('createdBy.id = :userId', { userId: user.id });
       }
     }
+    const total = await qb.getCount();
 
-    qb.take(limit).offset(offset);
-
-    const [data, total] = await qb.getManyAndCount();
+    qb.take(limit).skip(offset);
+    const data = await qb.getMany();
 
     return {
       data,
