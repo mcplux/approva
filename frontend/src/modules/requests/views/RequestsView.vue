@@ -10,8 +10,10 @@ import type { Request } from '../types/request.type'
 import RequestsPagination from '../components/RequestsPagination.vue'
 
 // Requests Modal
+const selectedRequestId = ref<Request['id'] | undefined>(undefined)
 const isModalOpen = ref(false)
-const openModal = () => {
+const openModal = (id?: Request['id']) => {
+  selectedRequestId.value = id
   isModalOpen.value = true
 }
 
@@ -66,7 +68,7 @@ onMounted(() => handleGetRequests())
   <div class="bg-gray-300 p-5 border-b border-gray-400">
     <div class="max-w-4xl mx-auto flex items-center gap-5">
       <button
-        @click="openModal"
+        @click="openModal()"
         class="flex items-center gap-1 bg-blue-600 text-white text-lg rounded py-2 px-6 hover:bg-blue-700 transition-colors cursor-pointer"
       >
         <Plus />
@@ -98,12 +100,13 @@ onMounted(() => handleGetRequests())
         :id="`item-${request.id}`"
         :request="request"
         :is-active="activeId === request.id"
-        @toggle="toggleActiveRequest"
+        @toggle="toggleActiveRequest(request.id)"
+        @edit="openModal(request.id)"
       />
     </div>
   </div>
 
   <RequestsPagination :current-page="currentPage" :total-pages="totalPages" @set-page="setPage" />
 
-  <RequestsModal v-model="isModalOpen" @saved="handleGetRequests" />
+  <RequestsModal v-model="isModalOpen" :request-id="selectedRequestId" @saved="handleGetRequests" />
 </template>

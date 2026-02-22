@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { X } from 'lucide-vue-next'
@@ -10,6 +10,7 @@ import { createRequestSchema } from '../schemas/create-request.schema'
 
 const props = defineProps<{
   modelValue: boolean
+  requestId?: number
 }>()
 
 const emit = defineEmits<{
@@ -24,9 +25,11 @@ const isOpen = computed({
   set: (val) => emit('update:modelValue', val),
 })
 
+const isEditing = computed(() => !!props.requestId)
 const isLoading = ref(false)
 
-const { handleSubmit, defineField, resetForm, errors } = useForm<DraftRequest>({
+// VeeValidate form
+const { handleSubmit, defineField, resetForm, errors, setValues } = useForm<DraftRequest>({
   validationSchema: toTypedSchema(createRequestSchema),
   initialValues: {
     title: '',
@@ -34,15 +37,40 @@ const { handleSubmit, defineField, resetForm, errors } = useForm<DraftRequest>({
     type: 'generic',
   },
 })
-
 const [title, titleAttrs] = defineField('title')
 const [description, descriptionAttrs] = defineField('description')
 const [type, typeAttrs] = defineField('type')
 
+watch(
+  () => props.requestId,
+  async (id) => {
+    if (!id) {
+      resetForm()
+      return
+    }
+    isLoading.value = true
+    const request = await requestsStore.getById(id)
+    if (request.success) {
+      setValues({
+        title: request.data.title,
+        description: request.data.description,
+        type: request.data.type,
+      })
+    }
+    isLoading.value = false
+  },
+  { immediate: true },
+)
+
 const onSubmit = handleSubmit(async (values) => {
   isLoading.value = true
+  let response
 
-  const response = await requestsStore.create(values)
+  if (isEditing.value) {
+    response = await requestsStore.update(props.requestId!, values)
+  } else {
+    response = await requestsStore.create(values)
+  }
 
   if (response.success) {
     emit('saved')
@@ -55,7 +83,6 @@ const onSubmit = handleSubmit(async (values) => {
 
 const close = () => {
   isOpen.value = false
-  resetForm()
 }
 </script>
 
@@ -68,7 +95,9 @@ const close = () => {
       <div class="w-full max-w-lg rounded-xl bg-white shadow-2xl p-6 relative">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-semibold text-gray-800">New Request</h2>
+          <h2 class="text-xl font-semibold text-gray-800">
+            {{ isEditing ? 'Edit Request' : 'New Request' }}
+          </h2>
 
           <button @click="close" class="text-gray-400 hover:text-gray-600 transition">
             <X />
@@ -138,7 +167,7 @@ const close = () => {
                 v-if="isLoading"
                 class="size-4 border-2 border-white border-t-transparent rounded-full animate-spin"
               />
-              Create
+              {{ isEditing ? 'Edit' : 'Create' }}
             </button>
           </div>
         </form>

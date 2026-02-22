@@ -12,7 +12,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'toggle', id: Request['id']): void
+  (e: 'toggle'): void
+  (e: 'edit'): void
 }>()
 
 // Animations
@@ -46,7 +47,7 @@ const onLeave = (el: Element) => {
 }
 
 const handleToggle = async () => {
-  emit('toggle', props.request.id)
+  emit('toggle')
   await nextTick()
 
   const el = document.getElementById(props.id)
@@ -120,6 +121,7 @@ const typeUI = computed(() => requestTypeConfig[props.request.type])
             <!-- Actions -->
             <div class="w-full flex justify-between gap-3">
               <button
+                @click="$emit('edit')"
                 class="w-full text-sm text-white px-3 rounded py-1 font-medium bg-blue-600 hover:bg-blue-800 transition-colors"
               >
                 Edit
