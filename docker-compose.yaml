@@ -45,5 +45,30 @@ services:
       - db
     command: npm run start:dev
 
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: approva_web_dev
+    restart: always
+    ports:
+      - "5173:5173"
+    develop:
+      watch:
+        - path: ./frontend
+          action: sync
+          target: /app
+          ignore:
+            - ./frontend/node_modules
+            - ./frontend/dist
+        - path: ./frontend/package.json
+          action: rebuild
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+      - VITE_LIMIT=${VITE_LIMIT}
+    depends_on:
+      - api
+      - db
+    command: npm run dev -- --host
 volumes:
   pg_data:
