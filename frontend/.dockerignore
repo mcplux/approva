@@ -1,0 +1,12 @@
+.git/
+.vscode/
+node_modules/
+tests/
+.dockerignore
+.editorconfig
+.eslintcache
+.git*
+.oxilintrc.json
+.prettierrc.json
+eslint.config.ts
+README.node_modules

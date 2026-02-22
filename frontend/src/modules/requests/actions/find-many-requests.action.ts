@@ -17,7 +17,7 @@ type Params = {
   mine?: boolean
 }
 
-const LIMIT = 2
+const LIMIT = +import.meta.env.VITE_LIMIT
 
 export const findManyRequestsAction = async ({
   page = 1,
