@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Check, ChevronDown, ChevronLeft, ChevronRight, Clock, Eye, Plus, X } from 'lucide-vue-next'
+import { onMounted, ref } from 'vue'
+import { ChevronDown, ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
 
+import { useRequestsStore } from '../stores/requests.store'
 import DropdownSelect from '../components/DropdownSelect.vue'
 import RequestsModal from '../components/RequestsModal.vue'
+import type { Request } from '../types/request.type'
+import { requestStatusConfig } from '../config/request-status.config'
+import { requestTypeConfig } from '../config/request-type.config'
 
 // Requests Modal
 const isModalOpen = ref(false)
@@ -24,6 +28,19 @@ const orderOptions = [
   { label: 'Most recent', value: 'recent' },
   { label: 'Oldest first', value: 'oldest' },
 ]
+
+// Requests
+const requestsStore = useRequestsStore()
+const requests = ref<Request[]>([])
+
+onMounted(async () => {
+  const response = await requestsStore.getUserRequests()
+  if (response.success) {
+    requests.value = response.data.data
+    console.log(requests.value)
+    return
+  }
+})
 </script>
 
 <template>
@@ -50,65 +67,25 @@ const orderOptions = [
   <div
     class="flex flex-col flex-1 gap-3 max-w-4xl w-full mx-auto p-5 border-b border-gray-400 overflow-auto"
   >
-    <div class="flex gap-3 items-center rounded bg-gray-100 shadow p-5">
+    <div
+      v-for="request in requests"
+      :key="request.id"
+      class="flex gap-3 items-center rounded bg-gray-100 shadow p-5"
+    >
       <div class="w-36">
-        <h3 class="text-lg font-bold text-slate-900 truncate">Vacations</h3>
-        <p class="text-slate-700 text-sm truncate">7 days free</p>
+        <h3 class="text-lg font-bold text-slate-900 truncate">
+          {{ requestTypeConfig[request.type].label }}
+        </h3>
+        <p class="text-slate-700 text-sm truncate">{{ request.title }}</p>
       </div>
 
       <div class="flex flex-1 gap-2 items-center px-5">
-        <div class="bg-amber-500 p-1 rounded-full">
-          <Clock class="text-white" />
+        <div class="p-1 rounded-full" :class="[requestStatusConfig[request.status].bgColor]">
+          <component :is="requestStatusConfig[request.status].component" class="text-white" />
         </div>
-        <p class="text-amber-500 font-bold text-lg">Pending</p>
-      </div>
-
-      <ChevronDown />
-    </div>
-
-    <div class="flex gap-3 items-center rounded bg-gray-100 shadow p-5">
-      <div class="w-36">
-        <h3 class="text-lg font-bold text-slate-900 truncate">Free day</h3>
-        <p class="text-slate-700 text-sm truncate">Sickness</p>
-      </div>
-
-      <div class="flex flex-1 gap-2 items-center px-5">
-        <div class="bg-blue-500 p-1 rounded-full">
-          <Eye class="text-white" />
-        </div>
-        <p class="text-blue-500 font-bold text-lg">In review</p>
-      </div>
-
-      <ChevronDown />
-    </div>
-
-    <div class="flex gap-3 items-center rounded bg-gray-100 shadow p-5">
-      <div class="w-36">
-        <h3 class="text-lg font-bold text-slate-900 truncate">Purchase</h3>
-        <p class="text-slate-700 text-sm truncate">A new laptop for HR</p>
-      </div>
-
-      <div class="flex flex-1 gap-2 items-center px-5">
-        <div class="bg-green-500 p-1 rounded-full">
-          <Check class="text-white" />
-        </div>
-        <p class="text-green-500 font-bold text-lg">Approved</p>
-      </div>
-
-      <ChevronDown />
-    </div>
-
-    <div class="flex gap-3 items-center rounded bg-gray-100 shadow p-5">
-      <div class="w-36">
-        <h3 class="text-lg font-bold text-slate-900 truncate">Generic</h3>
-        <p class="text-slate-700 text-sm truncate">Hire Martin Garrix</p>
-      </div>
-
-      <div class="flex flex-1 gap-2 items-center px-5">
-        <div class="bg-red-500 p-1 rounded-full">
-          <X class="text-white" />
-        </div>
-        <p class="text-red-500 font-bold text-lg">Rejected</p>
+        <p class="font-bold text-lg" :class="[requestStatusConfig[request.status].textColor]">
+          {{ requestStatusConfig[request.status].label }}
+        </p>
       </div>
 
       <ChevronDown />

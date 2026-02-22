@@ -18,7 +18,7 @@ type Params = {
   mine?: boolean
 }
 
-export const getManyRequestsAction = async ({
+export const findManyRequestsAction = async ({
   offset = 0,
   limit = 20,
   mine = true,

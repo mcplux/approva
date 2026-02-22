@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { getManyRequestsAction } from '../actions/get-many-requests.action'
-import type { DraftRequest } from '../types/draft-request.type'
+import { findManyRequestsAction } from '../actions/find-many-requests.action'
 import { createRequestAction } from '../actions/create-request.action'
+import type { DraftRequest } from '../types/draft-request.type'
 
 export const useRequestsStore = defineStore('requests', () => {
   const create = async (draftRequest: DraftRequest) => {
@@ -11,7 +11,7 @@ export const useRequestsStore = defineStore('requests', () => {
   }
 
   const getUserRequests = async () => {
-    const response = await getManyRequestsAction()
+    const response = await findManyRequestsAction()
 
     return response
   }

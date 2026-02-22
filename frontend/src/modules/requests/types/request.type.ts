@@ -5,7 +5,7 @@ export interface Request {
   title: string
   description: string
   type: 'vacation' | 'purchase' | 'generic'
-  status: string
+  status: 'created' | 'in-review' | 'approved' | 'rejected'
   createdAt: Date
   updatedAt: Date
   createdBy: User
