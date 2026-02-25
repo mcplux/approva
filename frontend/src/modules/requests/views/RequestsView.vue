@@ -5,17 +5,26 @@ import { Plus } from 'lucide-vue-next'
 import { useRequestsStore } from '../stores/requests.store'
 import DropdownSelect from '../components/DropdownSelect.vue'
 import UserRequestCard from '../components/UserRequestCard.vue'
-import type { Request } from '../types/request.type'
-import RequestsPagination from '../components/RequestsPagination.vue'
+import RequestPagination from '../components/RequestPagination.vue'
 import AppModal from '@/modules/common/components/AppModal.vue'
 import RequestForm from '../components/RequestForm.vue'
+import type { Request } from '../types/request.type'
+import RequestConfirmDelete from '../components/RequestConfirmDelete.vue'
 
-// Requests Modal
 const selectedRequestId = ref<Request['id'] | undefined>(undefined)
-const isModalOpen = ref(false)
-const openModal = (id?: Request['id']) => {
+
+// Request Form Modal
+const isFormModalOpen = ref(false)
+const openFormModal = (id?: Request['id']) => {
   selectedRequestId.value = id
-  isModalOpen.value = true
+  isFormModalOpen.value = true
+}
+
+// Request Confirm Delete Modal
+const isConfirmDeleteModalOpen = ref(false)
+const openConfirmDeleteModal = (id: Request['id']) => {
+  selectedRequestId.value = id
+  isConfirmDeleteModalOpen.value = true
 }
 
 // Filters
@@ -69,7 +78,7 @@ onMounted(() => handleGetRequests())
   <div class="bg-gray-300 p-5 border-b border-gray-400">
     <div class="max-w-4xl mx-auto flex items-center gap-5">
       <button
-        @click="openModal()"
+        @click="openFormModal()"
         class="flex items-center gap-1 bg-blue-600 text-white text-lg rounded py-2 px-6 hover:bg-blue-700 transition-colors cursor-pointer"
       >
         <Plus />
@@ -102,14 +111,23 @@ onMounted(() => handleGetRequests())
         :request="request"
         :is-active="activeId === request.id"
         @toggle="toggleActiveRequest(request.id)"
-        @edit="openModal(request.id)"
+        @edit="openFormModal(request.id)"
+        @delete="openConfirmDeleteModal(request.id)"
       />
     </div>
   </div>
 
-  <RequestsPagination :current-page="currentPage" :total-pages="totalPages" @set-page="setPage" />
+  <RequestPagination :current-page="currentPage" :total-pages="totalPages" @set-page="setPage" />
 
-  <AppModal v-model="isModalOpen" v-slot="{ close }">
+  <AppModal v-model="isFormModalOpen" v-slot="{ close }">
     <RequestForm :request-id="selectedRequestId" @close-modal="close" @saved="handleGetRequests" />
+  </AppModal>
+
+  <AppModal v-model="isConfirmDeleteModalOpen" v-slot="{ close }">
+    <RequestConfirmDelete
+      :request-id="selectedRequestId"
+      @close-modal="close"
+      @deleted="handleGetRequests"
+    />
   </AppModal>
 </template>

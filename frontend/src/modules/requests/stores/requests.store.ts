@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import {
   createRequestAction,
+  deleteRequestAction,
   findManyRequestsAction,
   findOneRequestAction,
   updateRequestAction,
@@ -28,10 +29,16 @@ export const useRequestsStore = defineStore('requests', () => {
     return response
   }
 
+  const deleteRequest = async (id: number) => {
+    const response = await deleteRequestAction(id)
+    return response
+  }
+
   return {
     create,
     getUserRequests,
     getById,
     update,
+    deleteRequest,
   }
 })

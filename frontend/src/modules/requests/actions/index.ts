@@ -1,4 +1,5 @@
 export { createRequestAction } from './create-request.action'
+export { deleteRequestAction } from './delete-request.action'
 export { findManyRequestsAction } from './find-many-requests.action'
 export { findOneRequestAction } from './find-one-request.action'
 export { updateRequestAction } from './update-request.action'

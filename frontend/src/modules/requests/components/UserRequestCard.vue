@@ -14,6 +14,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'toggle'): void
   (e: 'edit'): void
+  (e: 'delete'): void
 }>()
 
 // Animations
@@ -128,6 +129,7 @@ const typeUI = computed(() => requestTypeConfig[props.request.type])
               </button>
 
               <button
+                @click="$emit('delete')"
                 class="w-full text-sm text-white px-3 rounded py-1 font-medium bg-red-600 hover:bg-red-800 transition-colors"
               >
                 Delete
