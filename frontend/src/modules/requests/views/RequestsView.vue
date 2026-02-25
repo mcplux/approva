@@ -4,10 +4,11 @@ import { Plus } from 'lucide-vue-next'
 
 import { useRequestsStore } from '../stores/requests.store'
 import DropdownSelect from '../components/DropdownSelect.vue'
-import RequestsModal from '../components/RequestsModal.vue'
 import UserRequestCard from '../components/UserRequestCard.vue'
 import type { Request } from '../types/request.type'
 import RequestsPagination from '../components/RequestsPagination.vue'
+import AppModal from '@/modules/common/components/AppModal.vue'
+import RequestForm from '../components/RequestForm.vue'
 
 // Requests Modal
 const selectedRequestId = ref<Request['id'] | undefined>(undefined)
@@ -108,5 +109,7 @@ onMounted(() => handleGetRequests())
 
   <RequestsPagination :current-page="currentPage" :total-pages="totalPages" @set-page="setPage" />
 
-  <RequestsModal v-model="isModalOpen" :request-id="selectedRequestId" @saved="handleGetRequests" />
+  <AppModal v-model="isModalOpen" v-slot="{ close }">
+    <RequestForm :request-id="selectedRequestId" @close-modal="close" @saved="handleGetRequests" />
+  </AppModal>
 </template>
