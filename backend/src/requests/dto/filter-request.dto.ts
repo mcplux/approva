@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional } from 'class-validator';
+import { IsBoolean, IsIn, IsOptional } from 'class-validator';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 export class FilterRequestDto extends PaginationDto {
@@ -8,5 +8,8 @@ export class FilterRequestDto extends PaginationDto {
   @IsBoolean()
   mine?: boolean;
 
-  //? Add more filters
+  @IsOptional()
+  @Transform(({ value }) => (value as string).toUpperCase())
+  @IsIn(['ASC', 'DESC'])
+  order?: 'ASC' | 'DESC';
 }

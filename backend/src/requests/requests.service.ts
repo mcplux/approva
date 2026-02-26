@@ -38,7 +38,7 @@ export class RequestsService {
   }
 
   async findMany(filterRequestDto: FilterRequestDto, user: User) {
-    const { limit = 20, offset = 0, mine } = filterRequestDto;
+    const { limit = 20, offset = 0, mine, order = 'DESC' } = filterRequestDto;
 
     const qb = this.requestsRepository.createQueryBuilder('request');
     qb.leftJoin('request.createdBy', 'createdBy');
@@ -59,6 +59,9 @@ export class RequestsService {
         qb.andWhere('createdBy.id = :userId', { userId: user.id });
       }
     }
+
+    qb.orderBy('request.createdAt', order);
+
     const total = await qb.getCount();
 
     qb.take(limit).skip(offset);
