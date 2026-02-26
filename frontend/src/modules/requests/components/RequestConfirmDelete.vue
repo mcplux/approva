@@ -11,7 +11,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'closeModal'): void
-  (e: 'deleted'): void
+  (e: 'deleted', msg: string): void
 }>()
 
 const isLoading = ref(false)
@@ -22,7 +22,7 @@ const handleDelete = async () => {
     isLoading.value = true
     const { success } = await requestsStore.deleteRequest(props.requestId)
     if (success) {
-      emit('deleted')
+      emit('deleted', 'Request deleted successfully')
       emit('closeModal')
     }
     isLoading.value = false

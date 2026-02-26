@@ -13,7 +13,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'saved'): void
+  (e: 'saved', msg: string): void
   (e: 'closeModal'): void
 }>()
 
@@ -59,15 +59,18 @@ watch(
 const onSubmit = handleSubmit(async (values) => {
   isLoading.value = true
   let response
+  let msg
 
   if (isEditing.value) {
     response = await requestsStore.update(props.requestId!, values)
+    msg = 'Request updated successfully'
   } else {
     response = await requestsStore.create(values)
+    msg = 'Request created successfully'
   }
 
   if (response.success) {
-    emit('saved')
+    emit('saved', msg)
     emit('closeModal')
     resetForm()
   }

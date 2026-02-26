@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useToast } from 'vue-toastification'
 import { Plus } from 'lucide-vue-next'
 
 import { useRequestsStore } from '../stores/requests.store'
@@ -10,6 +11,8 @@ import AppModal from '@/modules/common/components/AppModal.vue'
 import RequestForm from '../components/RequestForm.vue'
 import type { Request } from '../types/request.type'
 import RequestConfirmDelete from '../components/RequestConfirmDelete.vue'
+
+const toast = useToast()
 
 const selectedRequestId = ref<Request['id'] | undefined>(undefined)
 
@@ -71,6 +74,11 @@ const setPage = (page: number) => {
   handleGetRequests()
 }
 
+const handleSuccess = async (msg: string) => {
+  toast.success(msg)
+  await handleGetRequests()
+}
+
 onMounted(() => handleGetRequests())
 </script>
 
@@ -120,14 +128,14 @@ onMounted(() => handleGetRequests())
   <RequestPagination :current-page="currentPage" :total-pages="totalPages" @set-page="setPage" />
 
   <AppModal v-model="isFormModalOpen" v-slot="{ close }">
-    <RequestForm :request-id="selectedRequestId" @close-modal="close" @saved="handleGetRequests" />
+    <RequestForm :request-id="selectedRequestId" @close-modal="close" @saved="handleSuccess" />
   </AppModal>
 
   <AppModal v-model="isConfirmDeleteModalOpen" v-slot="{ close }">
     <RequestConfirmDelete
       :request-id="selectedRequestId"
       @close-modal="close"
-      @deleted="handleGetRequests"
+      @deleted="handleSuccess"
     />
   </AppModal>
 </template>
