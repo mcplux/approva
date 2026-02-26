@@ -91,6 +91,11 @@ const typeUI = computed(() => requestTypeConfig[props.request.type])
         <div class="p-5">
           <!-- Description -->
           <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide text-right">
+              Request #{{ request.id }}
+            </p>
+          </div>
+          <div class="pt-4">
             <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide">
               Description
             </h3>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useToast } from 'vue-toastification'
 import { Plus } from 'lucide-vue-next'
 
@@ -9,8 +9,8 @@ import UserRequestCard from '../components/UserRequestCard.vue'
 import RequestPagination from '../components/RequestPagination.vue'
 import AppModal from '@/modules/common/components/AppModal.vue'
 import RequestForm from '../components/RequestForm.vue'
-import type { Request } from '../types/request.type'
 import RequestConfirmDelete from '../components/RequestConfirmDelete.vue'
+import type { Request } from '../types/request.type'
 
 const toast = useToast()
 
@@ -31,17 +31,21 @@ const openConfirmDeleteModal = (id: Request['id']) => {
 }
 
 // Filters
-const selectedFilter = ref('all')
-const selectedOrder = ref('recent')
+const selectedFilter = ref<Request['type'] | 'all'>('all')
+const selectedOrder = ref<'asc' | 'desc'>('desc')
 
-const filterOptions = [
+const filterOptions: {
+  label: string
+  value: Request['type'] | 'all'
+}[] = [
   { label: 'All categories', value: 'all' },
-  { label: 'Vacations', value: 'vacations' },
-  { label: 'Purchases', value: 'purchases' },
+  { label: 'Vacations', value: 'vacation' },
+  { label: 'Purchases', value: 'purchase' },
+  { label: 'Others', value: 'generic' },
 ]
 const orderOptions = [
-  { label: 'Most recent', value: 'recent' },
-  { label: 'Oldest first', value: 'oldest' },
+  { label: 'Most recent', value: 'desc' },
+  { label: 'Oldest first', value: 'asc' },
 ]
 
 // Requests & pagination
@@ -58,7 +62,7 @@ const toggleActiveRequest = async (id: Request['id']) => {
 
 const handleGetRequests = async () => {
   isLoading.value = true
-  const response = await requestsStore.getUserRequests(currentPage.value)
+  const response = await requestsStore.getUserRequests(currentPage.value, selectedOrder.value)
   if (response.success) {
     requests.value = response.data.data
     totalPages.value = Math.ceil(response.data.meta.total / response.data.meta.limit)
@@ -80,6 +84,8 @@ const handleSuccess = async (msg: string) => {
 }
 
 onMounted(() => handleGetRequests())
+
+watch(selectedOrder, handleGetRequests)
 </script>
 
 <template>

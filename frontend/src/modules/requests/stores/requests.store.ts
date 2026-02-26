@@ -14,8 +14,8 @@ export const useRequestsStore = defineStore('requests', () => {
     return response
   }
 
-  const getUserRequests = async (page: number) => {
-    const response = await findManyRequestsAction({ page })
+  const getUserRequests = async (page: number, order: 'asc' | 'desc' = 'desc') => {
+    const response = await findManyRequestsAction({ page, order })
     return response
   }
 
